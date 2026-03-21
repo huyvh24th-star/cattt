@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Máy Phát CAT Tự Động</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+</head>
+<body style="text-align: center; font-family: Arial; padding-top: 50px;">
+    <h1>Điểm Danh Nhận CAT 🐾</h1>
+    <button id="connectBtn" style="padding: 10px 20px;">1. Kết Nối Ví</button>
+    <br><br>
+    <button id="claimBtn" style="padding: 15px 30px; font-size: 20px; background: orange; border: none; display: none;">2. Điểm Danh Nhận 10 CAT</button>
+    <p id="status"></p>
+
+    <script>
+        // THAY ĐỊA CHỈ CONTRACT CỦA BẠN VÀO ĐÂY
+        const contractAddress = "0xE0910db49AFBE915Dc2E0Ec27edE5BBdc7C2a8dd"; 
+        
+        // DÁN ABI BẠN VỪA COPY TỪ REMIX VÀO TRONG DẤU NGOẶC VUÔNG NÀY
+        const contractABI = [[
+	{
+		"inputs": [],
+		"name": "checkIn",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rutTien",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "lastCheckIn",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rewardAmount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "tokenAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+] ];
+
+        let signer;
+        let contract;
+
+        document.getElementById('connectBtn').onclick = async () => {
+            if (window.ethereum) {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = provider.getSigner();
+                contract = new ethers.Contract(contractAddress, contractABI, signer);
+                
+                document.getElementById('connectBtn').innerText = "Đã Kết Nối!";
+                document.getElementById('claimBtn').style.display = "inline-block";
+            } else {
+                alert("Hãy cài MetaMask!");
+            }
+        };
+
+        document.getElementById('claimBtn').onclick = async () => {
+            try {
+                document.getElementById('status').innerText = "Đang xử lý... Đợi xíu nhé!";
+                const tx = await contract.checkIn(); // Tên hàm trong code của bạn
+                await tx.wait();
+                document.getElementById('status').innerText = "Thành công! CAT đã về ví bạn.";
+            } catch (err) {
+                console.error(err);
+                document.getElementById('status').innerText = "Lỗi: " + (err.reason || "Kiểm tra lại số dư CAT trong máy!");
+            }
+        };
+    </script>
+</body>
+</html>
