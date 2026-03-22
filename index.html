@@ -1,224 +1,89 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Máy Phát CAT Tự Động</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-</head>
-<body style="text-align: center; font-family: Arial; padding-top: 50px;">
-    <h1>Điểm Danh Nhận CAT 🐾</h1>
-    
-    <button id="connectBtn" style="padding: 10px 20px;">1. Kết Nối Ví</button>
-    <br><br>
-    
-    <button id="claimBtn" style="padding: 15px 30px; font-size: 20px; background: orange; border: none; border-radius: 5px; cursor: pointer; display: none;">2. Điểm Danh Nhận 10 CAT</button>
-    
-    <p id="status" style="margin-top: 20px; font-weight: bold;"></p>
-
-    <script>
-        // ĐỊA CHỈ CONTRACT BẠN VỪA DEPLOY (Giữ nguyên của bạn)
-        const contractAddress = "0xE0910db49AFBE915Dc2E0Ec27edE5BBdc7C2a8dd"; 
-        
-        // ABI ĐÃ SỬA: CHỈ CÒN 1 LỚP DẤU NGOẶC VUÔNG [ ... ]
-        const contractABI = [
-            {
-                "inputs": [],
-                "name": "checkIn",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "rutTien",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "name": "lastCheckIn",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "rewardAmount",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "tokenAddress",
-                "outputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            }
-        ];
-
-        let signer;
-        let contract;
-
-        // Xử lý khi nhấn nút "Kết Nối Ví"
-        document.getElementById('connectBtn').onclick = async () => {
-            if (window.ethereum) {
-                try {
-                    // Yêu cầu kết nối ví
-                    const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    await provider.send("eth_requestAccounts", []);
-                    
-                    // Lấy signer để ký giao dịch
-                    signer = provider.getSigner();
-                    
-                    // Tạo contract instance
-                    contract = new ethers.Contract(contractAddress, contractABI, signer);
-                    
-                    // TỰ ĐỘNG CHUYỂN SANG MẠNG SOMNIA TESTNET (ID 50312)
-                    try {
-                        await window.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: '0xc488' }], // 50312 ở dạng Hex
-                        });
-                    } catch (switchError) {
-                        console.log("Người dùng đang ở đúng mạng hoặc từ chối chuyển mạng.");
-                    }
-                    
-                    // Cập nhật giao diện
-                    document.getElementById('connectBtn').innerText = "Đã Kết Nối!";
-                    document.getElementById('connectBtn').style.background = "#ddd";
-                    document.getElementById('claimBtn').style.display = "inline-block";
-                    document.getElementById('status').innerText = "Đã kết nối ví thành công!";
-                } catch (err) {
-                    console.error(err);
-                    document.getElementById('status').innerText = "Lỗi kết nối: " + err.message;
-                }
-            } else {
-                alert("Hãy cài đặt MetaMask hoặc một ví Web3 khác!");
-            }
-        };
-
-        // Xử lý khi nhấn nút "Điểm Danh"
-        document.getElementById('claimBtn').onclick = async () => {
-            try {
-                document.getElementById('status').innerText = "Đang gửi giao dịch... Vui lòng xác nhận trên ví!";
-                
-                // Gọi hàm checkIn (Phải khớp với tên hàm trong contract ở Remix)
-                const tx = await contract.checkIn(); 
-                
-                document.getElementById('status').innerText = "Giao dịch đang được xử lý... Đợi xíu nhé!";
-                
-                // Đợi giao dịch được xác nhận trên blockchain
-                await tx.wait();
-                
-                document.getElementById('status').innerText = "Chúc mừng! Điểm danh thành công, 10 CAT đã về ví bạn.";
-            } catch (err) {
-                console.error(err);
-                // Hiển thị lỗi rõ ràng hơn cho người dùng
-                document.getElementById('status').innerText = "Lỗi: " + (err.reason || "Vui lòng kiểm tra lại số dư CAT trong máy phát!");
-            }
-        };
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAT Airdrop Portal</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <title>CAT Login - Somnia Testnet</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding-top: 50px; background: #121212; color: #fff; }
-        .container { background: #1e1e1e; padding: 40px; border-radius: 20px; display: inline-block; border: 2px solid #f39c12; box-shadow: 0 0 20px rgba(243, 156, 18, 0.2); }
-        h1 { color: #f39c12; margin-bottom: 10px; }
-        .btn { padding: 15px 40px; font-size: 20px; cursor: pointer; background: #f39c12; border: none; border-radius: 50px; color: white; font-weight: bold; transition: 0.3s; margin-top: 20px; }
-        .btn:hover { background: #e67e22; transform: scale(1.05); }
-        #status { margin-top: 25px; font-weight: bold; color: #f1c40f; min-height: 24px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #1a1a1a; color: white; margin: 0; }
+        .card { background: #2d2d2d; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; width: 320px; border: 1px solid #444; }
+        h2 { color: #ffad00; margin-bottom: 10px; }
+        button { background: linear-gradient(45deg, #ff8c00, #ff4500); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; width: 100%; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 69, 0, 0.4); }
+        #status { margin-top: 20px; font-size: 0.9rem; color: #aaa; word-break: break-all; }
+        #balance { margin-top: 10px; font-size: 1.2rem; color: #00ffcc; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🐾 ĐIỂM DANH NHẬN CAT 🐾</h1>
-        <p>Mỗi ngày nhấn một lần để nhận thưởng đồng CAT</p>
-        
-        <button class="btn" onclick="checkIn()">ĐIỂM DANH NGAY</button>
-        
-        <p id="status">Vui lòng kết nối MetaMask mạng Somnia</p>
-    </div>
 
-    <script>
-        // --- CHỖ CẦN SỬA ---
-        // Dán địa chỉ Smart Contract bạn nhận được từ Remix vào đây:
-        const contractAddress = "0xE0910db49AFBE915Dc2E0Ec27edE5BBdc7C2a8dd";
-        
-        // ABI (Định nghĩa hàm để web hiểu)
-        const abi = [ "function checkIn() public" ];
+<div class="card">
+    <h2>CAT Community 🐱</h2>
+    <p>Chào mừng bạn đến với hệ sinh thái CAT</p>
+    <button id="connectBtn">Kết nối & Đăng nhập</button>
+    <div id="status">Chưa kết nối ví</div>
+    <div id="balance"></div>
+</div>
 
-        async function checkIn() {
-            const statusLabel = document.getElementById('status');
-            
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    statusLabel.innerText = "Đang kết nối ví...";
-                    const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    
-                    // Yêu cầu người dùng kết nối ví
-                    await provider.send("eth_requestAccounts", []);
-                    const signer = provider.getSigner();
-                    const contract = new ethers.Contract(contractAddress, abi, signer);
+<script>
+    const SOMNIA_PARAMS = {
+        chainId: '0xC488', // 50312 ở dạng Hex
+        chainName: 'Somnia Testnet',
+        nativeCurrency: { name: 'STT', symbol: 'STT', decimals: 18 },
+        rpcUrls: ['https://rpc.testnet.somnia.network'],
+        blockExplorerUrls: ['https://explorer-testnet.somnia.network/']
+    };
 
-                    statusLabel.innerText = "Vui lòng xác nhận trên ví MetaMask...";
-                    
-                    // Gọi hàm điểm danh
-                    const tx = await contract.checkIn();
-                    
-                    statusLabel.innerText = "Đang xử lý trên Blockchain... (Đợi xíu nhé)";
-                    await tx.wait();
-                    
-                    statusLabel.innerText = "✅ Thành công! Đồng CAT đã về ví của bạn.";
-                    statusLabel.style.color = "#00ff00";
+    const CAT_CONTRACT = "0xE0910db49AFBE915Dc2E0Ec27edE5BBdc7C2a8dd";
+    const ABI = ["function balanceOf(address) view returns (uint256)", "function symbol() view returns (string)"];
 
-                } catch (err) {
-                    console.error(err);
-                    if (err.reason) {
-                        statusLabel.innerText = "❌ Lỗi: " + err.reason;
-                    } else if (err.message.includes("user rejected")) {
-                        statusLabel.innerText = "❌ Bạn đã từ chối giao dịch.";
-                    } else {
-                        statusLabel.innerText = "❌ Lỗi: Hợp đồng hết tiền hoặc bạn đã điểm danh rồi.";
-                    }
-                    statusLabel.style.color = "#ff4444";
-                }
-            } else {
-                statusLabel.innerText = "❌ Vui lòng cài đặt MetaMask!";
-                statusLabel.style.color = "#ff4444";
+    async function switchNetwork() {
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: SOMNIA_PARAMS.chainId }],
+            });
+        } catch (error) {
+            // Nếu mạng chưa có trong ví, yêu cầu thêm mạng mới
+            if (error.code === 4902) {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [SOMNIA_PARAMS],
+                });
             }
         }
-    </script>
+    }
+
+    async function login() {
+        if (typeof window.ethereum !== 'undefined') {
+            try {
+                // 1. Chuyển mạng trước
+                await switchNetwork();
+                
+                // 2. Kết nối ví
+                const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                const userAddress = accounts[0];
+                document.getElementById('status').innerText = `Địa chỉ: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`;
+
+                // 3. Kiểm tra số dư CAT
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const contract = new ethers.Contract(CAT_CONTRACT, ABI, provider);
+                const balance = await contract.balanceOf(userAddress);
+                const symbol = await contract.symbol();
+                
+                document.getElementById('balance').innerHTML = `Số dư: <b>${ethers.utils.formatUnits(balance, 18)} ${symbol}</b>`;
+                document.getElementById('connectBtn').innerText = "Đã đăng nhập thành công";
+            } catch (err) {
+                console.error(err);
+                alert("Có lỗi xảy ra khi kết nối!");
+            }
+        } else {
+            alert("Vui lòng cài đặt MetaMask!");
+        }
+    }
+
+    document.getElementById('connectBtn').addEventListener('click', login);
+</script>
+
 </body>
 </html>
